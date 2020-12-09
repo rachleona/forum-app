@@ -1,0 +1,70 @@
+{% extends "layout/layout.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block main %}
+    <form action="/auth/register" method="post">
+        <div class="form-group">
+            <input id="_name" autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+        </div>
+        <div class="form-group">
+            <input id="_email" class="form-control" name="email" placeholder="Email" type="email">
+        </div>
+        <div class="form-group">
+            <input id="_pass" class="form-control" name="password" placeholder="Password" type="password">
+        </div>
+        <div class="form-group">
+            <input id="_confirm" class="form-control" name="confirm" placeholder="Confirm Password" type="password">
+        </div>
+        <button id="_submit" class="btn btn-primary" type="submit" disabled>Register</button>
+    </form>
+
+    <script>
+        let pws = document.querySelectorAll("input[type='password']")
+        let inputs = document.querySelectorAll("input")
+
+        for(i of pws)
+        {
+            i.onkeyup = () => {
+                let pass = document.querySelector("#_pass")
+                let con = document.querySelector("#_confirm")
+
+                if(pass.value && con.value && pass.value == con.value)
+                {
+                    pass.style.backgroundColor = "#e5f4e3"
+                    con.style.backgroundColor = "#e5f4e3"
+                }
+                else
+                {
+                    pass.style.backgroundColor = "#ffffff"
+                    con.style.backgroundColor = "#ffffff"
+                }
+            }
+        }
+
+        for(e of inputs)
+        {
+            e.oninput = () => {
+                let name = document.querySelector("#_name").value
+                let email = document.querySelector("#_email").value
+                let pw = document.querySelector("#_pass").value
+                let confirm = document.querySelector("#_confirm").value
+
+                if(!name || !pw || !confirm || !email || pw != confirm)
+                {
+                    document.querySelector("#_submit").disabled = true
+                }
+                else
+                {
+                    document.querySelector("#_submit").disabled = false
+                }
+            }
+        }
+    </script>
+{% endblock %}
+
+{% block footer %}
+
+{% endblock %}
