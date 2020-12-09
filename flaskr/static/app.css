@@ -1,0 +1,95 @@
+/* layouts */
+/* primary colour: #ff8676
+secondary colour: #37718E
+dark colour: #160F29
+light colour: #FFF1F0 */
+
+#navbar {
+    background-color:#160F29;
+    display: flex;
+    padding: 0 30px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.brand {
+    padding: 4px 0;
+}
+
+.title {
+    font-family: "Aclonica";
+}
+
+.body {
+    font-family: "Poiret One";
+}
+
+.nav-brand {
+    text-decoration: none;
+    font-family: "Aclonica";
+    font-size: 30px;
+    color: #FFF1F0;
+    padding: 4px 0;
+    transition: all ease-in-out 0.3s;
+
+}
+
+.nav-brand:hover {
+    color: #FFF1F0;
+    transform:scaleX(1.1);
+    transition: all ease-in-out 0.3s;
+}
+
+#navbar div {
+    margin: 0 10px;
+    height: 100%;
+    display:flex;
+    flex-wrap: nowrap;
+}
+
+.nav-i {
+    font-family: "Poiret One";
+    font-size: 18px;
+    color: white;
+    padding: 4px 10px;
+    text-decoration: none;
+}
+
+.nav-i:hover {
+    color: #160F29;
+}
+
+.nav-con {
+    transition: all ease-in-out 0.3s;
+    height: 100%;
+    padding: 15px;
+}
+
+.nav-con:hover {
+    transform: scaleX(1.2);
+    background-color: #FF8676;
+    color: black;
+    transition: all ease-in-out 0.3s;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #160F29;
+}
+
+footer a{
+    text-decoration:none;
+    color: #FFF1F0;
+    font-size: 12px;
+    padding: 0 5px;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+body {
+    background-color: #FFF1F0;
+}
