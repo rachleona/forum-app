@@ -1,0 +1,46 @@
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS profiles;
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS comments;
+
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username VARCHAR(30) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    pw CHAR(60) 
+);
+
+CREATE TABLE profiles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user INTEGER NOT NULL,
+    firstname VARCHAR(255),
+    lastname VARCHAR(255),
+    bio TEXT,
+    gender VARCHAR(30),
+    pronouns VARCHAR(20),
+    age INTEGER,
+    birthday DATE,
+    FOREIGN KEY (user) REFERENCES users (id)
+);
+
+CREATE TABLE posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    author INTEGER NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    edited TIMESTAMP,
+    likes INTEGER ARRAY [100],
+    FOREIGN KEY (author) REFERENCES users (id)
+);
+
+CREATE TABLE comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    author INTEGER NOT NULL,
+    post INTEGER NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    body TEXT NOT NULL,
+    likes INTEGER ARRAY [100],
+    FOREIGN KEY (author) REFERENCES users (id)
+    FOREIGN KEY (post) REFERENCES posts (id)
+);
