@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+
+    <!--bootstrap-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+
+    <!--google fonts-->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Aclonica&family=Poiret+One&display=swap" rel="stylesheet">
+
+    <link href={{ url_for('static', filename='app.css') }} rel="stylesheet">
+</head>
+<body>
+    <nav id="navbar">
+        <div class="brand"><a class="nav-brand" href="/">SafeSpace</a></div>
+        <div>
+            <div class="nav-con"><a class="nav-i" href="/feed/discover">Discover</a></div>
+            {% if session.user_id %}
+                <div class="nav-con"><a class="nav-i" href="/feed">Home</a></div>
+                <div class="nav-con"><a class="nav-i" href="/profile/me">Profile</a></div>
+                <div class="nav-con"><a class="nav-i ml-auto" href="/auth/logout">Logout</a></div>
+            {% else %}
+                <div class="nav-con"><a class="nav-i ml-auto" href="/auth/login">Login/Register</a></div>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% if get_flashed_messages() %}
+        <header>
+            <div class="alert alert-primary border text-center" role="alert">
+                {{ get_flashed_messages() | join(" ") }}
+            </div>
+        </header>
+    {% endif %}
+
+    <main class="container p-5">
+        {% block main %}{% endblock %}
+    </main>
+    <footer class="footer mt-auto">
+        <div class="container">
+        {% block footer %}{% endblock %}
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+</body>
+</html>
