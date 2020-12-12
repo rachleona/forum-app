@@ -31,6 +31,7 @@ CREATE TABLE posts (
     body TEXT NOT NULL,
     edited TIMESTAMP,
     likes INTEGER ARRAY [100],
+    anon BOOOLEAN,
     FOREIGN KEY (author) REFERENCES users (id)
 );
 
@@ -41,6 +42,7 @@ CREATE TABLE comments (
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     body TEXT NOT NULL,
     likes INTEGER ARRAY [100],
-    FOREIGN KEY (author) REFERENCES users (id)
+    anon BOOLEAN,
+    FOREIGN KEY (author) REFERENCES users (id),
     FOREIGN KEY (post) REFERENCES posts (id)
 );
