@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask import ( render_template )
 
+from auth import apology
 
 def create_app(test_config=None):
     # create and configure the app
@@ -35,5 +36,9 @@ def create_app(test_config=None):
     @app.route('/')
     def landing():
         return render_template('layout/landing.html')
+    
+    @app.errorhandler(404)
+    def not_found():
+        return apology("Page not found", 404)
 
     return app
