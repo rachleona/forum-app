@@ -10,7 +10,38 @@ from SafeSpace.auth import login_required, apology
 
 bp = Blueprint('profile', __name__, url_prefix='/profile')
 
-# public route
+@bp.route('/create', methods=('GET', 'POST'))
+@login_required
+def createProfile():
+    if request.method == 'POST':
+        db = get_db()
+        user = session.get('user_id')
+        firstname = request.form['firstname']
+        lastname = request.form['lastname']
+        bio = request.form['bio']
+        gender = request.form['gender']
+        pronouns = request.form['pronouns']
+        age = request.form['age']
+        birthday = request.form['birthday']
+
+        try:
+            db.execute(
+                'INSERT INTO profiles (user, firstname, lastname, gender, bio, pronouns, age, birthday) VALUES(?, ?, ?, ?, ?, ?, ?)',
+                (user, firstname, lastname, gender, bio, pronouns, age, birthday)
+            )
+        except:
+            return apology("Something went wrong! Please try again.", 500)
+
+        profile = db.execute(
+            'SELECT firstname, lastname, gender, bio, pronouns, age, birthday FROM profiles WHERE user = ?', (user,)
+        )
+
+        session['user_profile'] = profile
+        print(profile)
+        return redirect(url_for(profile.me))
+
+    return render_template("profile/edit.html", profile=session.get('user_profile'), create=True)
+
 @bp.route('/<username>')
 def user_profile(username):
     profile = db.execute(
