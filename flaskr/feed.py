@@ -14,23 +14,51 @@ bp = Blueprint('feed', __name__, url_prefix='/feed')
 @bp.route('/me')
 @login_required
 def myFeed():
+    db = get_db()
     posts = db.execute(
         'SELECT * FROM posts WHERE author = ? ORDER BY created DESC LIMIT 200', (session.get('user_id'),)
-    )
-    return render_template("feed/view.html", posts=posts)
+    ).fetchall()
+
+    if not posts:
+       posts = None
+    else:
+        arr = []
+        for row in posts:
+            arr.append(dict(zip(['id', 'author', 'created', 'title', 'body', 'edited', 'likes', 'anon'], row)))
+        posts = arr
+
+    return render_template("feed/view.html", posts=posts, title="Home")
 
 @bp.route('/<user_id>')
 def getPostsBy(user_id):
+    db = get_db()
     posts = db.execute(
         'SELECT * FROM posts WHERE author = ? AND anon = FALSE ORDER BY created DESC LIMIT 200', (user_id,)
-    )
+    ).fetchall()
 
-    return render_template("feed/view.html", posts=posts)
+    if not posts:
+       posts = None
+    else:
+        arr = []
+        for row in posts:
+            arr.append(dict(zip(['id', 'author', 'created', 'title', 'body', 'edited', 'likes', 'anon'], row)))
+        posts = arr
+
+    return render_template("feed/view.html", posts=posts, title=user_id + "'s posts")
 
 @bp.route('/discover')
 def getAllPosts():
+    db = get_db()
     posts = db.execute(
-        'SELECT * FROM posts ORDER BY created DESC LIMIT 200', (user_id,)
-    )
+        'SELECT * FROM posts ORDER BY created DESC LIMIT 200',
+    ).fetchall()
 
-    return render_template("feed/view.html", posts=posts)
+    if not posts:
+       posts = None
+    else:
+        arr = []
+        for row in posts:
+            arr.append(dict(zip(['id', 'author', 'created', 'title', 'body', 'edited', 'likes', 'anon'], row)))
+        posts = arr
+
+    return render_template("feed/view.html", posts=posts, title="discover")
