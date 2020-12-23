@@ -1,4 +1,6 @@
 import functools
+import json
+import datetime
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -24,61 +26,87 @@ def createProfile():
         age = request.form['age']
         birthday = request.form['birthday']
 
-        try:
-            db.execute(
-                'INSERT INTO profiles (user, firstname, lastname, gender, bio, pronouns, age, birthday) VALUES(?, ?, ?, ?, ?, ?, ?)',
-                (user, firstname, lastname, gender, bio, pronouns, age, birthday)
-            )
-        except:
+        if not db.execute(
+            'INSERT INTO profiles (user, firstname, lastname, gender, bio, pronouns, age, birthday) VALUES(?, ?, ?, ?, ?, ?, ?, ?)',
+            (user, firstname, lastname, gender, bio, pronouns, age, birthday)
+        ):
             return apology("Something went wrong! Please try again.", 500)
+        db.commit()
 
-        profile = db.execute(
+        columns = ['firstname', 'lastname', 'gender', 'bio', 'pronouns', 'age', 'birthday']
+        profile = dict(zip(columns, db.execute(
             'SELECT firstname, lastname, gender, bio, pronouns, age, birthday FROM profiles WHERE user = ?', (user,)
-        )
+        ).fetchone()))
 
-        session['user_profile'] = profile
-        print(profile)
-        return redirect(url_for(profile.me))
+        return redirect(url_for('profile.myProfile'))
 
-    return render_template("profile/edit.html", profile=session.get('user_profile'), create=True)
+    profile = dict(zip(['firstname', 'lastname', 'gender', 'bio', 'pronouns', 'age', 'birthday'], 
+    db.execute(
+        'SELECT firstname, lastname, gender, bio, pronouns, age, birthday FROM profiles WHERE user = (SELECT id FROM users WHERE username = ?)', (session.get('user_id'),)
+    ).fetchone()))
+    return render_template("profile/edit.html", profile=None if not profile else profile, create=(True if not profile else False))  
 
 @bp.route('/<username>')
-def user_profile(username):
+def userProfile(username):
+    db = get_db()
+    user = db.execute(
+        'SELECT id FROM users WHERE username = ?', (username,)
+    ).fetchone()
+
+    if not user:
+        return apology("Page not found", 404)
+
     profile = db.execute(
-        'SELECT user, firstname, lastname, gender, pronouns, age, birthday FROM profiles WHERE user = (SELECT id FROM users WHERE username = ?)', (username,)
+        'SELECT firstname, lastname, gender, bio, pronouns, age FROM profiles WHERE user = ?', (user[0],)
     ).fetchone()
 
     if not profile:
-        return apology("Could not get requested content", 404)
+        return apology("Page not found", 404)
     
-    return render_template("profile/view.html", profile=profile)
+    profile = dict(zip(['firstname', 'lastname', 'gender', 'bio', 'pronouns', 'age'], profile), birthday=db.execute('SELECT birthday FROM profiles WHERE user = ?', (user[0],)).fetchone()[0])
+
+    return render_template("profile/view.html", profile=profile, user=username)
 
 @bp.route('/me')
 @login_required
-def my_profile(): 
-    profile = session.get('user_profile')
-    return render_template("profile/view.html", profile=profile)
+def myProfile(): 
+    db = get_db()
+    profile = db.execute(
+        'SELECT firstname, lastname, gender, bio, pronouns, age FROM profiles WHERE user = ?', (session.get('user_id'),)
+    ).fetchone()
+    if not profile:
+        return redirect(url_for('profile.createProfile'))
+    
+    profile = dict(zip(['firstname', 'lastname', 'gender', 'bio', 'pronouns', 'age'], profile), birthday=db.execute('SELECT birthday FROM profiles WHERE user = ?', (session.get('user_id'),)).fetchone()[0])
+    return render_template("profile/view.html", profile=profile, user=session.get('user_name'))
 
 @bp.route('/edit', methods=('GET', 'POST'))
 @login_required
-def edit_profile():
+def editProfile():
+    db = get_db()
     if request.method == 'POST':
         user = session.get('user_id')
-        queries = request.form.get("queries")
+        queries = json.loads(request.form["queries"])
+
         try:
-            for(let q in queries)
-            {
+            for q in queries:
+                value = requst.form[q]
+                if q == 'birthday':
+                    value = request.form[q].date
                 db.execute(
-                    'UPDATE profiles SET ' + q.col + ' = ? WHERE user = ?', (q.val, user,)
+                    'UPDATE profiles SET ' + q + ' = ? WHERE user = ?', (value, user,)
                 )
-            }
-        except e as error:
+        except:
             return apology("Something went wrong! Please try again.", 500)
+        
+        columns = ['firstname', 'lastname', 'bio', 'gender', 'age', 'pronouns', 'birthday']
+        db.commit()
 
-        session['user_profile'] = db.execute(
-            'SELECT firstname, lastname, bio, gender, age, pronouns, birthday FROM profiles WHERE user = ?', (user,)
-        )
+        return redirect(url_for('profile.myProfile'))
 
-        return redirect(url_for('profile.me'))
+    profile = dict(zip(['firstname', 'lastname', 'gender', 'bio', 'pronouns', 'age', 'birthday'], 
+    db.execute(
+        'SELECT firstname, lastname, gender, bio, pronouns, age, birthday FROM profiles WHERE user = ?', (session.get('user_id'),)
+    ).fetchone()))
 
-    return render_template("profile/edit.html", profile=session.get('user_profile'))
+    return render_template("profile/edit.html", profile=profile, create=False)
