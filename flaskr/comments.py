@@ -1,4 +1,6 @@
 import functools
+import json
+from datetime import datetime
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -10,82 +12,101 @@ from SafeSpace.auth import login_required, apology
 
 bp = Blueprint('comment', __name__, url_prefix='/comment')
 
-@bp.route('/<post_id>', methods=('POST'))
+@bp.route('/<post_id>', methods=['POST'])
 @login_required
-def comment(post_id):  
+def comment(post_id): 
+    db = get_db() 
     body = request.form["body"]
     anon = request.form["anon"]
 
-    try:
-        db.execute(
-            'INSERT INTO comments (author, body, anon, likes, post) VALUES (?, ?, ?, ?, ?)', 
-            (session.get('user_id'), body, anon, [], post_id)
-        )
-    except e as error:
-        return apology("Something went wrong! Please try again.", 500)
+    if anon == 'true':
+        anon = True
+    else:
+        anon = False
 
-    return db.execute( 
-        'SELECT * FROM comments WHERE author = ? AND post_id = ? ORDER BY created DESC', (session.get('user_id'), post_id,)
-    ).fetchone()
+    if not db.execute(
+        'INSERT INTO comments (author, body, anon, likes, post) VALUES (?, ?, ?, ?, ?)', 
+        (session.get('user_id'), body, anon, json.dumps([]), post_id)
+    ):
+        return json.dumps([])
 
-@bp.route('/edit/<comment_id>', methods=('POST'))
-@login_required
-def editComment(comment_id):
-    comment = db.execute(
-        'SELECT * FROM comments WHERE id = ?', (comment_id,)
-    ).fetchone()
+    db.commit()
 
-    if not comment['author'] == session.get('user_id'):
-        return apology("Unauthorized access", 403)
+    comment = dict(zip(['id', 'author', 'post', 'anon', 'created', 'body', 'likes'],
+        db.execute( 
+            'SELECT a.id, b.username, a.post, a.anon, a.created, a.body, a.likes FROM comments a, users b WHERE a.author = ? AND b.id = a.author AND a.post = ? ORDER BY created DESC', (session.get('user_id'), post_id,)
+        ).fetchone()))
+    
+    comment['created'] = comment['created'].date().strftime('%Y-%m-%d')
+    
+    return json.dumps(comment)
 
-    queries = json.load(request.form["queries"])
-    try:
-        for q in queries:
-            db.execute(
-                'UPDATE comments SET ' + q.col + ' = ? WHERE id = ?', (q.val, comment_id,)
-            )
-        db.execute('UPDATE comments SET edited = CURRENT_TIMESTAMP WHERE id = ?', (comment_id,))
-    except e as error:
-        return apology("Something went wrong! Please try again.", 500, error)
+# @bp.route('/edit/<comment_id>', methods=('POST'))
+# @login_required
+# def editComment(comment_id):
+#     db = get_db()
+#     comment = db.execute(
+#         'SELECT * FROM comments WHERE id = ?', (comment_id,)
+#     ).fetchone()
+
+#     if not comment['author'] == session.get('user_id'):
+#         return apology("Unauthorized access", 403)
+
+#     queries = json.load(request.form["queries"])
+#     try:
+#         for q in queries:
+#             db.execute(
+#                 'UPDATE comments SET ' + q.col + ' = ? WHERE id = ?', (q.val, comment_id,)
+#             )
+#         db.execute('UPDATE comments SET edited = CURRENT_TIMESTAMP WHERE id = ?', (comment_id,))
+#     except:
+#         return apology("Something went wrong! Please try again.", 500)
         
-    return db.execute(
-        'SELECT * FROM comments WHERE id = ?', (comment_id,)
-    ).fetchone()
+#     return db.execute(
+#         'SELECT * FROM comments WHERE id = ?', (comment_id,)
+#     ).fetchone()
 
-@bp.route('/like/<comment_id>', methods=('POST'))
+@bp.route('/like/<comment_id>', methods=['POST'])
 @login_required
 def likePost(comment_id):
-    likes = json.load(request.form["likes"])
+    db = get_db()
+    likes = json.loads(request.form["likes"])
     user = session.get('user_id')
-    if user in likes:
-        list.remove(user)
-    else:
-        list.append(user)
 
-    try:
-        db.execute(
-            'UPDATE comments SET likes = ? WHERE id = ?', (likes, comment_id,)
-        )
-    except e as error:
-        return apology("Something went wrong! Please try again.", 500, error)
+    if user in likes:
+        likes.remove(user)
+    else:
+        likes.append(user)
+
+    likes = json.dumps(likes)
+
+    if not db.execute(
+        'UPDATE comments SET likes = ? WHERE id = ?', (likes, comment_id,)
+    ):
+        return request.form["likes"]
+
+    db.commit()
 
     return likes
 
-@bp.route('/delete/<comment_id>', methods=('POST'))
+@bp.route('/delete/<comment_id>', methods=['POST'])
 @login_required
 def deletePost(comment_id):
+    db = get_db()
     comment =  db.execute(
         'SELECT author, post FROM comments WHERE id = ?', (comment_id,)
     ).fetchone()
 
     if not session.get('user_id') == comment['author']:
-        return apology("Unauthorized access", 403)
+        flash("Unauthorized access")
+        return "403"
 
-    try:
-        db.execute(
-            'DELETE FROM comments WHERE id = ?', (comment_id,)
-        )
-    except e as error:
-        return apology("Something went wrong! Please try again.", 500, error)
+    if not db.execute(
+        'DELETE FROM comments WHERE id = ?', (comment_id,)
+    ):
+        flash("Something went wrong! Please try again.")
+        return "500"
 
-    return redirect(url_for(posts[comment['post']]))
+    db.commit()
+
+    return "200"
