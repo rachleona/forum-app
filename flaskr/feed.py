@@ -1,5 +1,7 @@
 import functools
 
+from datetime import datetime
+
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
@@ -16,7 +18,7 @@ bp = Blueprint('feed', __name__, url_prefix='/feed')
 def myFeed():
     db = get_db()
     posts = db.execute(
-        'SELECT * FROM posts WHERE author = ? ORDER BY created DESC LIMIT 200', (session.get('user_id'),)
+        'SELECT a.id, b.username, a.created, a.title, a.body, a.edited, a.likes, a.anon FROM posts a, users b WHERE a.author = ? AND b.id = a.author ORDER BY created DESC LIMIT 200', (session.get('user_id'),)
     ).fetchall()
 
     if not posts:
@@ -25,6 +27,7 @@ def myFeed():
         arr = []
         for row in posts:
             arr.append(dict(zip(['id', 'author', 'created', 'title', 'body', 'edited', 'likes', 'anon'], row)))
+            arr[-1]['created'] = arr[-1]['created'].date()
         posts = arr
 
     return render_template("feed/view.html", posts=posts, title="Home")
@@ -33,7 +36,7 @@ def myFeed():
 def getPostsBy(user_id):
     db = get_db()
     posts = db.execute(
-        'SELECT * FROM posts WHERE author = ? AND anon = FALSE ORDER BY created DESC LIMIT 200', (user_id,)
+        'SELECT a.id, b.username, a.created, a.title, a.body, a.edited, a.likes, a.anon FROM posts a, users b WHERE a.author = ? AND a.anon = FALSE AND b.id = a.author ORDER BY created DESC LIMIT 200', (user_id,)
     ).fetchall()
 
     if not posts:
@@ -42,6 +45,7 @@ def getPostsBy(user_id):
         arr = []
         for row in posts:
             arr.append(dict(zip(['id', 'author', 'created', 'title', 'body', 'edited', 'likes', 'anon'], row)))
+            arr[-1]['created'] = arr[-1]['created'].date()
         posts = arr
 
     return render_template("feed/view.html", posts=posts, title=user_id + "'s posts")
@@ -50,7 +54,7 @@ def getPostsBy(user_id):
 def getAllPosts():
     db = get_db()
     posts = db.execute(
-        'SELECT * FROM posts ORDER BY created DESC LIMIT 200',
+        'SELECT a.id, b.username, a.created, a.title, a.body, a.edited, a.likes, a.anon FROM posts a, users b WHERE b.id = a.author ORDER BY created DESC LIMIT 200',
     ).fetchall()
 
     if not posts:
@@ -59,6 +63,7 @@ def getAllPosts():
         arr = []
         for row in posts:
             arr.append(dict(zip(['id', 'author', 'created', 'title', 'body', 'edited', 'likes', 'anon'], row)))
+            arr[-1]['created'] = arr[-1]['created'].date()
         posts = arr
 
     return render_template("feed/view.html", posts=posts, title="discover")
