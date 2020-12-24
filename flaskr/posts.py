@@ -1,5 +1,6 @@
 import functools
 import json
+from datetime import datetime
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -23,15 +24,20 @@ def viewPost(post_id):
         return apology("Page not found", 404)
 
     post = dict(zip(['id', 'created', 'title', 'body', 'anon', 'edited', 'likes', 'author'], post))
+    post['created'] = post['created'].date()
 
     comments = db.execute(
-        'SELECT a.created, a.body, a.post, a.anon, a.likes, b.username FROM comments a, users b WHERE a.post = ? AND b.id = a.author ORDER BY created', (post_id,)
+        'SELECT a.id, a.created, a.body, a.post, a.anon, a.likes, b.username FROM comments a, users b WHERE a.post = ? AND b.id = a.author ORDER BY created DESC', (post_id,)
     ).fetchall()
 
     if comments:
-        comments = dict(zip(['created', 'body', 'post', 'anon', 'likes', 'author'], comments))
+        arr = []
+        for comment in comments:
+            arr.append(dict(zip(['id', 'created', 'body', 'post', 'anon', 'likes', 'author'], comment)))
+            arr[-1]['created'] =  arr[-1]['created'].date().strftime("%Y-%m-%d")
+        comments = arr
 
-    return render_template("posts/view.html", post=post)
+    return render_template("posts/view.html", post=post, comments=comments)
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
@@ -124,15 +130,21 @@ def deletePost(post_id):
     ).fetchone()['author']
 
     if not session.get('user_id') == author:
-        return apology("Unauthorized access", 403)
+        flash("Unauthorized access")
+        return "403"
 
-    try:
-        db.execute(
-            'DELETE FROM posts WHERE id = ?', (post_id,)
-        )
-    except:
-        return apology("Something went wrong! Please try again.", 500)
+    if not db.execute(
+        'DELETE FROM posts WHERE id = ?', (post_id,)
+    ):
+       flash("Something went wrong! Please try again.")
+       return "500"
+
+    if not db.execute(
+        'DELETE FROM comments WHERE post = ?', (post_id,)
+    ):
+        flash("Something went wrong! Please try again.")
+        return "500"
 
     db.commit()
 
-    return redirect(url_for('feed.myFeed'))
+    return "200"
