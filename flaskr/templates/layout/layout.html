@@ -20,11 +20,12 @@
         <div>
             <div class="nav-con"><a class="nav-i" href="/feed/discover">Discover</a></div>
             {% if session.user_id %}
-                <div class="nav-con"><a class="nav-i" href="/feed">Home</a></div>
+                <div class="nav-con"><a class="nav-i" href="/feed/me">Home</a></div>
                 <div class="nav-con"><a class="nav-i" href="/profile/me">Profile</a></div>
-                <div class="nav-con"><a class="nav-i ml-auto" href="/auth/logout">Logout</a></div>
+                <div class="nav-con"><a class="nav-i" href="/posts/create">Post</a></div>
+                <div class="nav-con"><a class="nav-i" href="/auth/logout">Logout</a></div>
             {% else %}
-                <div class="nav-con"><a class="nav-i ml-auto" href="/auth/login">Login/Register</a></div>
+                <div class="nav-con"><a class="nav-i ml-auto" href="/auth/login">Login</a></div>
             {% endif %}
         </div>
     </nav>
