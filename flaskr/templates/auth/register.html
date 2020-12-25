@@ -6,17 +6,22 @@
 
 {% block main %}
     <form action="/auth/register" method="post">
+        <h2>User Registration</h2>
+        <label for="username">Username</label>
         <div class="form-group">
-            <input id="_name" autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+            <input id="_name" autocomplete="off" class="form-control line-input" name="username" type="text">
         </div>
+        <label for="email">Email</label>
         <div class="form-group">
-            <input id="_email" class="form-control" name="email" placeholder="Email" type="email">
+            <input id="_email" class="form-control line-input" name="email" type="email">
         </div>
+        <label for="password">Password</label>
         <div class="form-group">
-            <input id="_pass" class="form-control" name="password" placeholder="Password" type="password">
+            <input id="_pass" class="form-control line-input" name="password" type="password">
         </div>
+        <label for="confirm">Confirm Password</label>
         <div class="form-group">
-            <input id="_confirm" class="form-control" name="confirm" placeholder="Confirm Password" type="password">
+            <input id="_confirm" class="form-control line-input" name="confirm" type="password">
         </div>
         <button id="_submit" class="btn btn-primary" type="submit" disabled>Register</button>
     </form>
@@ -25,6 +30,7 @@
         let pws = document.querySelectorAll("input[type='password']")
         let inputs = document.querySelectorAll("input")
 
+        // check if password and confirm password fields match
         for(i of pws)
         {
             i.onkeyup = () => {
