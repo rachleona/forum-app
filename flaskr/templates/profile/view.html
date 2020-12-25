@@ -1,0 +1,27 @@
+{% extends "layout/layout.html" %}
+
+{% block title%}
+{{ user }}
+{% endblock %}
+
+{% block main %}
+<div id="profile">
+    <img src={{ url_for('static', filename='Profile.jpg') }}>
+    <h2>{{ user }}</h2>
+    <!-- {% if profile['firstname'] or profile['lastname'] %}<span id="name">{{ profile['firstname'] }} {{ profile['lastname'] }}</span>{% endif %} -->
+    <div id="misc">
+        {% if profile['firstname'] or profile['lastname'] %}<span>{{ profile['firstname'] }} {{ profile['lastname'] }}</span>{% endif %}
+        {% if profile['age'] %}<span>{{ profile['age'] }} </span>{% endif %}
+        {% if profile['gender'] %}<span>{{ profile['gender'] }} </span>{% endif %}
+        {% if profile['pronouns'] %}<span>{{ profile['pronouns'] }} </span>{% endif %}
+        {% if profile['birthday'] %}<span>Born {{ profile['birthday'] }}</span>{% endif %}
+    </div>
+    <br />
+    <p id="bio">{{ profile['bio'] }}</p>
+    <a class="btn btn-primary" href="/feed/{{ user }}">{% if user == session.get('user_name') %}My{% else %}See{% endif %} posts</a>
+</div>
+{% endblock %}
+
+{% block footer %}
+<a href='https://www.freepik.com/vectors/abstract'>Default avatar image created by vectorjuice - www.freepik.com</a>
+{% endblock %}
