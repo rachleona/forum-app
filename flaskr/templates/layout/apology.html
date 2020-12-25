@@ -4,5 +4,12 @@ Error
 {% endblock %}
 
 {% block main %}
-{{ message }}
+<div id="apology">
+<h2>{{ message }}</h2>
+<img src={{ url_for('static', filename="Apology.png") }} alt="We're sorry">
+</div>
+{% endblock %}
+
+{% block footer %}
+<a href='https://pngtree.com/so/illustration'>illustration png from pngtree.com</a>
 {% endblock %}
