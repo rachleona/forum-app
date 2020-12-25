@@ -5,7 +5,13 @@ SafeSpace
 {% endblock %}
 
 {% block main %}
-Hi!
+<div id="landing">
+    <div>
+        Mental health matters. A safe space for all your troubles.
+    </div>
+    <a href="/feed/discover" class="btn btn-primary">Discover</a>
+</div>
+<img src={{ url_for('static', filename="Landing.jpg") }} alt="Mental Health" id="landing-img">
 {% endblock %}
 
 {% block footer %}
