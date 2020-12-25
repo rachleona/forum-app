@@ -1,0 +1,45 @@
+{% extends "layout/layout.html" %}
+
+{% block title %}
+    {% if create %}
+        Create Profile
+    {% else %}
+        Edit Profile
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+    {% if create %}
+    <form action="/profile/create" method="POST">
+    {% else %}
+    <form action="/profile/edit" method="POST">
+    {% endif %}
+        <h2>Create profile</h2>
+        <label for="firstname">First name</label>    
+        <div class="form-group"><input class="form-control line-input" onchange="registerChange('firstname')" type="text" name="firstname" maxlength=20 value="{{ '' if create else profile['firstname'] }}"></div>
+        <label for="lastname">Last name</label>
+        <div class="form-group"><input class="form-control line-input" onchange="registerChange('lastname')" type="text" name="lastname" maxlength=20 value="{{ '' if create else profile['lastname'] }}"></div>
+        <label for="bio">Bio</label>
+        <div class="form-group"><textarea class="form-control box-input" onchange="registerChange('bio')" name="bio" value="{{ '' if create else profile['bio'] }}"></textarea></div>
+        <label for="age">Age</label>
+        <div class="form-group"><input class="form-control line-input" onchange="registerChange('age')" type="number" name="age" value="{{ '' if create else profile['age'] }}"></div>
+        <label for="birthday">Birthday</label>
+        <div class="form-group"><input class="form-control line-input" onchange="registerChange('birthday')" type="date" name="birthday" value="{{ '' if create else profile['birthday'] }}"></div>
+        <label for="gender">Gender</label>
+        <div class="form-group"><input class="form-control line-input" onchange="registerChange('gender')" type="text" name="gender" value="{{ '' if create else profile['gender'] }}"></div>
+        <label for="pronouns">Pronouns</label>
+        <div class="form-group"><input class="form-control line-input" onchange="registerChange('pronouns')" type="text" name="pronouns" value="{{ '' if create else profile['pronouns'] }}"></div>
+        {% if not create %}<input class="d-none" name="queries" id="queries">{% endif %}
+        <button class="btn btn-primary">
+            Submit
+        </button>
+    </form>
+    
+    <script>
+        let queries = new Set()
+        const registerChange = field => {
+            queries.add(field)
+            document.querySelector("#queries").value = JSON.stringify(queries)
+        }
+    </script>
+{% endblock %}
