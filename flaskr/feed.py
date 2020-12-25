@@ -32,11 +32,11 @@ def myFeed():
 
     return render_template("feed/view.html", posts=posts, title="Home")
 
-@bp.route('/<user_id>')
-def getPostsBy(user_id):
+@bp.route('/<username>')
+def getPostsBy(username):
     db = get_db()
     posts = db.execute(
-        'SELECT a.id, b.username, a.created, a.title, a.body, a.edited, a.likes, a.anon FROM posts a, users b WHERE a.author = ? AND a.anon = FALSE AND b.id = a.author ORDER BY created DESC LIMIT 200', (user_id,)
+        'SELECT a.id, b.username, a.created, a.title, a.body, a.edited, a.likes, a.anon FROM posts a, users b WHERE b.username = ? AND a.anon = FALSE AND b.id = a.author ORDER BY created DESC LIMIT 200', (username,)
     ).fetchall()
 
     if not posts:
@@ -48,7 +48,7 @@ def getPostsBy(user_id):
             arr[-1]['created'] = arr[-1]['created'].date()
         posts = arr
 
-    return render_template("feed/view.html", posts=posts, title=user_id + "'s posts")
+    return render_template("feed/view.html", posts=posts, title=username + "'s posts")
 
 @bp.route('/discover')
 def getAllPosts():
