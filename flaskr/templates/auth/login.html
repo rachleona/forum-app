@@ -5,13 +5,19 @@ Login
 {% endblock %}
 
 {% block main %}
-<form action="/auth/login" method="post">
+<div style="display:flex;justify-content: center;">
+<form action="/auth/login" method="post" id="login">
+    <h2>User Login</h2>
+    <label for="username">Username</label>
     <div class="form-group">
-        <input id="_name" autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+        <input id="_name" autocomplete="off" class="form-control line-input" name="username" type="text">
     </div>
+    <label for="password">Password</label>
     <div class="form-group">
-        <input id="_pass" class="form-control" name="password" placeholder="Password" type="password">
+        <input id="_pass" class="form-control line-input" name="password" type="password">
     </div>
     <button id="_submit" class="btn btn-primary" type="submit">Login</button>
+    <p>New here? <a href="/auth/register">Register an account</a></p>
 </form>
+</div>
 {% endblock %}
