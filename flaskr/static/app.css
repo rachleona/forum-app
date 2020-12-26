@@ -18,7 +18,8 @@ main {
     flex-wrap: wrap;
     position:fixed;
     top: 0;
-    width: 100%
+    width: 100%;
+    z-index: 100;
 }
 
 .brand {
@@ -265,6 +266,10 @@ label{
     transition: all ease-in-out 0.3s;
 }
 
+.form-inline input{
+    margin-left: 10px;
+}
+
 /* profile */
 #profile{
     display: flex;
@@ -311,3 +316,180 @@ label{
     text-align: center;
 }
 
+/* posts */
+.post{
+    background-color: white;
+    padding: 1.2rem;
+    box-shadow: #bfbfbf 0px 0px 8px 2px;
+    margin-bottom: 16px;
+    position:relative;
+}
+
+.top{
+    display: flex;
+}
+
+.top h2{
+    flex-grow: 1;
+    font-family: 'Aclonica';
+}
+
+.top span{
+    font-family: 'Poiret One';
+    margin: 0px 5px;
+    color: #37718E;
+    font-size: .9rem
+}
+
+.post p{
+    font-family: 'Poiret One';
+    font-size: 1.1rem;
+}
+
+.btn-like{
+    border: 1px solid #FF8676;
+    color: #FF8676;
+    font-family: 'Aclonica';
+    border-radius: 10px;
+    background-color: transparent;
+    cursor: pointer;
+    padding: 2px 10px;
+    box-shadow: 0px 0px 3px 0px;
+    transition: all ease-in-out 0.3s;
+}
+
+.btn-misc{
+    border: none;
+    color:#37718E;
+    background-color: transparent;
+    cursor: pointer;
+    padding: 2px 10px;
+    text-shadow: 0px 0px 3px #bfbfbf;
+    text-decoration: none;
+}
+
+.btn-misc:hover{
+    color:#37718E;
+}
+
+.btn-like:hover{
+    transform: scaleX(1.1);
+    transition: transform ease-in-out 0.3s;
+}
+
+.btn-like.liked{
+    background-color: #FF8676;
+    color: white;
+    transition: all ease-in-out 0.3s;
+}
+
+.btn-more{
+    text-decoration: none;
+    color: #37718E;
+    font-family: 'Aclonica';
+    border: 1px solid #37718E;
+    padding: 2px 10px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 3px;
+    transition: all ease-in-out 0.3s;
+    display:inline-block;
+    margin: 0px 5px;
+}
+
+.btn-more:hover{
+    transform: scaleX(1.1);
+    color: #37718E;
+    transition: all ease-in-out 0.3s;
+}
+
+.btn-like:focus, 
+.btn-more:focus, 
+.btn-misc:focus{
+    outline:none;
+}
+
+.bottom{
+    display:flex;
+    flex-wrap: wrap;
+}
+
+.bottom .misc{
+    position: absolute;
+    right: 25px;
+}
+
+.bottom .misc span{
+    margin-right: 5px;
+    color: #37718E;
+    font-family: 'Poiret One';
+    font-size: .8rem;
+}
+
+.user-link{
+    color: #37718E;
+    text-decoration: none;
+}
+
+.user-link:hover{
+    color:#FF8676;
+}
+
+textarea#body{
+    height: auto;
+}
+
+/* comments */
+#comments{
+    margin-top: 30px;
+}
+
+.comment{
+    padding: 20px;
+    border-top: 1px solid #37718E;
+    position:relative;
+}
+
+.comment .misc{
+    position: absolute;
+    right:0
+}
+
+.comment p{
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.comment .misc span{
+    font-size: 0.8rem;
+    font-family: 'Poiret One';
+    color: #37718E;
+}
+
+.btn-comment{
+    color: #160F29;
+    font-family: 'Aclonica';
+    border: 1px solid #160F29;
+    padding: 2px 10px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 3px;
+    background-color: transparent;
+    transition: all ease-in-out 0.3s;
+}
+
+.btn-comment:hover{
+    transform: scaleX(1.1);
+    background-color: #160F29;
+    color: white;
+    transition: all ease-in-out 0.3s;
+}
+
+#newComment{
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+#newComment .form-inline{
+    flex-grow: 1;
+}
