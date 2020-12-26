@@ -1,0 +1,54 @@
+{% extends "layout/layout.html" %}
+
+{% block title %}
+{% if create %}
+Create Post
+{% else %}
+Edit Post
+{% endif %}
+{% endblock %}
+
+{% block main %}
+<form method="POST" {% if create %} action="/posts/create" {% else %} action="/posts/edit/{{post.id}}" {% endif %}>
+    <h2>{% if create %}New{% else %}Edit{% endif %} post</h2>
+    <label for="title">Title</label>
+    <div class="form-group"><input id="title" class="form-control i line-input" type="text" autocomplete="off" name="title" {% if not create %} value="{{ post['title'] }}" {% endif %} required></div>
+    <label for="body">Post body</label>
+    <div class="form-group"><textarea id="body" class="form-control i box-input" name="body" required>{% if not create %}{{ post['body'] }}{% endif %}</textarea></div>
+    <div class="form-inline">
+        <label for="anon">Post as anon </label><input class="i" type="checkbox" name="anon" value="anon" {% if not create and post['anon'] %} checked {% endif %}>
+    </div>
+    <input class="d-none" name="queries" id="queries">
+    <button class="btn btn-primary" {% if create %} disabled {% endif %}>Post</button>
+</form>
+<script>
+    const queries = new Set()
+    const inputs = document.querySelectorAll(".i")
+    const title = document.querySelector("#title")
+    const body = document.querySelector("#body")
+    const btn = document.querySelector("button")
+    document.querySelector("#queries").value = JSON.stringify(queries)
+
+    for(let input of inputs)
+    {
+        input.addEventListener("change", () => {
+            queries.add(input.name)
+            document.querySelector("#queries").value = JSON.stringify([...queries])
+        })
+    }
+
+    const check = () => {
+        if(title.value != "" && body.value != "")
+        {
+            btn.disabled = false
+        }
+        else
+        {
+            btn.disabled = true
+        }
+    }
+
+    title.addEventListener("keyup", () => { check() })
+    body.addEventListener("keyup", () => { check() })
+</script>
+{% endblock %}
