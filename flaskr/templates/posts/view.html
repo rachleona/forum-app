@@ -1,0 +1,232 @@
+{% extends "layout/layout.html" %}
+{% block title %}
+{{ post['title'] }}
+{% endblock %}
+
+{% block main %}
+<div class="post" id="{{ post['id'] }}">
+    <!-- title and misc info -->
+    <div class="top">
+        <h2>{{ post['title'] }}</h2>
+        {% if not post['anon'] %}<span>By  <a class="user-link" href="/profile/{{ post['author']}}">{{ post['author']}}</a> </span>{% endif %}
+        <span>{{ post['created'] }}</span>
+    </div>
+    
+    <!-- body -->
+    <p>{{ post['body'] }}</p>
+    
+    <!-- bottom misc -->
+    <div class="bottom">
+        <button class="btn-like" onclick="likePost({{ post['id'] }})">Like <span id="likes"></span></button>
+        <input class="d-none" value="{{ post['likes'] }}">
+        <div class="misc">
+            {% if post['edited'] %}<span> last edited {{ post['edited'] }}</span>{% endif %}
+            {% if session.get('user_name') and post['author'] == session.get('user_name') %}
+            <button class="btn-misc" onclick="deletePost({{ post['id'] }})"><i class="fas fa-trash"></i></button>
+            <a class="btn-misc" href="/posts/edit/{{ post['id'] }}"><i class="fas fa-edit"></i></a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- comments -->
+    <div id="comments">
+        <!-- new comment -->
+        <label for="body">New comment</label>
+        <div class="form-group"><textarea class="form-control box-input" name="body" id="body"></textarea></div>
+        <div id="newComment">
+            <div class="form-inline">
+                <label for="anon">Post as anon</label> <input type="checkbox" name="anon" id="anon">
+            </div>
+            <button class="btn-comment" onclick="comment({{ post['id'] }})">Comment</button>
+        </div>
+        <div id="commentsBody">
+        {% for comment in comments %}
+            <div class="comment" id="{{ comment['id'] }}">
+                <p>{{ comment['body'] }}</p>
+                <div style="display:flex">
+                    <button class="btn-like" onclick="likeComment({{ comment['id'] }})">Like <span id="likes_{{ comment['id'] }}"></span></button>
+                    <div class="misc">
+                        {% if not comment['anon'] %}<span>By {{ comment['author'] }} </span>{% endif %}
+                        <span>{{ comment['created'] }}</span>
+                        {% if session.get('user_name') and comment['author'] == session.get('user_name') %}
+                            <button class="btn-misc" onclick="delComment({{ comment['id'] }})"><i class="fas fa-trash"></i></button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // idk why but it doesn't work when I use let here??
+    var likesArr = JSON.parse(document.querySelector("input").value)
+    var commentLikes = {{ comments|safe }}.reduce( (obj, comment) => {
+        const cur = {...obj}
+        cur[comment['id']] = JSON.parse(comment['likes'])
+        return cur
+    }, {})
+
+    function deletePost(post_id)
+    {
+        const delRequest = new XMLHttpRequest()
+
+        delRequest.onreadystatechange = () => {
+            if(delRequest.readyState === XMLHttpRequest.DONE)
+            {
+                if(delRequest.status === 200 && delRequest.responseText == "200")
+                {
+                    window.location = "/feed/me"
+                }
+            }
+        }
+
+        delRequest.open('POST', `/posts/delete/${ post_id }`)
+        delRequest.send()
+    }
+
+    function delComment(comment_id)
+    {
+        const delRequest = new XMLHttpRequest()
+
+        delRequest.onreadystatechange = () => {
+            if(delRequest.readyState === XMLHttpRequest.DONE)
+            {
+                if(delRequest.status === 200 && delRequest.responseText == "200")
+                {
+                    document.getElementById(`${ comment_id }`).remove()
+                }
+            }
+        }
+
+        delRequest.open('POST', `/comment/delete/${ comment_id }`)
+        delRequest.send()
+    }
+
+    function likePost(post_id)
+    {
+        const likeRequest = new XMLHttpRequest()
+        
+        likeRequest.onreadystatechange = () => {
+            if(likeRequest.readyState === XMLHttpRequest.DONE) 
+            {
+                if(likeRequest.status === 200) 
+                {
+                    const initial = likesArr.length
+                    const span = document.querySelector("#likes")
+                    likesArr = JSON.parse(likeRequest.responseText);
+                    span.innerHTML = likesArr.length
+                    if(initial < likesArr.length)
+                    {
+                        span.parentNode.classList.add("liked")
+                    }
+                    else
+                    {
+                        span.parentNode.classList.remove("liked")
+                    }
+                }
+            }
+        }
+
+        likeRequest.open('POST', `/posts/like/${ post_id }`)
+        likeRequest.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+        likeRequest.send(`likes=${ JSON.stringify(likesArr) }`)
+    }
+
+    function likeComment(comment_id)
+    {
+        const likeRequest = new XMLHttpRequest()
+        
+        likeRequest.onreadystatechange = () => {
+            if(likeRequest.readyState === XMLHttpRequest.DONE) 
+            {
+                if(likeRequest.status === 200) 
+                {
+                    const initial = commentLikes[comment_id].length
+                    const span =document.querySelector(`#likes_${ comment_id }`)
+                    commentLikes[comment_id] = JSON.parse(likeRequest.responseText);
+                    span.innerHTML = commentLikes[comment_id].length
+                    if(initial < commentLikes[comment_id].length)
+                    {
+                        span.parentNode.classList.add("liked")
+                    }
+                    else
+                    {
+                        span.parentNode.classList.remove("liked")
+                    }
+                }
+            }
+        }
+
+        likeRequest.open('POST', `/comment/like/${ comment_id }`)
+        likeRequest.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+        likeRequest.send(`likes=${ JSON.stringify(commentLikes[comment_id]) }`)
+    }
+
+    function comment(post_id)
+    {   
+        const body = document.querySelector("#body").value
+        if(!body)
+        {
+            alert("Please enter comment")
+            return
+        }
+        const commentRequest = new XMLHttpRequest()
+
+        commentRequest.onreadystatechange = () => {
+            if (commentRequest.readyState === XMLHttpRequest.DONE) {
+                if (commentRequest.status === 200) 
+                {
+                    const div = document.querySelector("#commentsBody")
+                    const newComment = JSON.parse(commentRequest.responseText)
+
+                    commentLikes[newComment['id']] = JSON.parse(newComment['likes'])
+
+                    const newDiv = `
+                    <div class="comment" id="${ newComment['id'] }">
+                        <p>${ newComment['body'] }</p>
+                        <div style="display:flex">
+                            <button class="btn-like" onclick="likeComment(${ newComment['id'] })">Like <span id="likes_${ newComment['id'] }">${ commentLikes[newComment['id']].length }</span></button>
+                            <div class="misc">
+                                ${ newComment['anon'] ? "" :`<span>By ${ newComment['author'] } </span>` }
+                                <span>${ newComment['created'] }</span>
+                                <button class="btn-misc" onclick="delComment(${ newComment['id'] })"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>` 
+
+                    div.innerHTML = newDiv + div.innerHTML
+                    document.querySelector("#body").value = ''
+                    document.querySelector("#anon").checked = false
+                }
+            }
+        }
+
+        commentRequest.open('POST', `/comment/${post_id}`)
+        commentRequest.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+        commentRequest.send(`body=${ body }&anon=${ document.querySelector("#anon").checked }`)
+    }
+
+    (() => {
+        document.querySelector("#likes").innerHTML = likesArr.length
+
+        for(let key of Object.keys(commentLikes))
+        {
+            document.querySelector(`#likes_${ key }`).innerHTML = commentLikes[key].length
+            if(commentLikes[key].includes({{ session.get('user_id') }}))
+            {
+                document.querySelector(`#likes_${ key }`).parentNode.classList.add("liked")
+            }
+        }
+
+        if(likesArr.includes({{ session.get('user_id')|safe }}))
+        {
+            document.querySelector("#likes").parentNode.classList.add("liked")
+        }
+    })()
+</script>
+{% endblock %}
