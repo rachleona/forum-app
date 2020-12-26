@@ -1,0 +1,104 @@
+{% extends "layout/layout.html" %}
+{% block title %}
+{{ title  }}
+{% endblock %}
+
+{% block main %}
+{% if not posts %}
+<p class="body">No posts available</p>
+<a class="btn btn-primary" href="/feed/discover">Discover</a>
+{% else %}
+<div>
+    {% for post in posts %}
+        <div class="post" id="{{ post['id'] }}">
+            <div class="top">
+                <h2>{{ post['title'] }}</h2>
+                {% if not post['anon'] %}<span>By <a class="user-link" href="/profile/{{ post['author']}}">{{ post['author']}}</a> </span>{% endif %}
+                <span>{{ post['created'] }}</span>
+            </div>
+            <p>{{ post['body'] }}</p>
+            <div class="bottom">
+                <button class="btn-like" {% if session.get('user_id') %} onclick="likePost({{ post['id'] }})" {% endif %}>Like <span id="likes_{{ post['id'] }}"></span></button>
+                <input class="d-none" value="{{ post['likes'] }}" id="arr_{{ post['id'] }}">
+                <a class="btn-more" href="/posts/{{ post['id'] }}">See more</a> 
+                <div class="misc">
+                    {% if post['edited'] %}<span> last edited {{ post['edited'] }}</span>{% endif %}
+                    {% if session.get('user_name') and post['author'] == session.get('user_name') %}
+                    <button class="btn-misc" onclick="deletePost({{ post['id'] }})"><i class="fas fa-trash"></i></button>
+                    <a class="btn-misc" href="/posts/edit/{{ post['id'] }}"><i class="fas fa-edit"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    const posts = document.querySelectorAll("div.post")
+    // idk why but it doesn't work when I use let here??
+    var likesArr = {};
+
+    (() => {
+        for(let post of posts)
+        {
+            const span = document.querySelector("#likes_" + post.id)
+            console.log(post.id)
+            likesArr[post.id] = JSON.parse(document.querySelector(`#arr_${ post.id }`).value)
+            span.innerHTML = likesArr[post.id].length
+            if(likesArr[post.id].includes({{ session.get('user_id')|safe }}))
+            {
+                span.parentNode.classList.add("liked")
+            }
+        }
+    })()
+
+    function deletePost(post_id)
+    {
+        const delRequest = new XMLHttpRequest()
+
+        delRequest.onreadystatechange = () => {
+            if(delRequest.readyState === XMLHttpRequest.DONE)
+            {
+                if(delRequest.status === 200 && delRequest.responseText == "200")
+                {
+                    document.getElementById(`${ post_id }`).remove()
+                }
+            }
+        }
+
+        delRequest.open('POST', `/posts/delete/${ post_id }`)
+        delRequest.send()
+    }
+
+    function likePost(post_id)
+    {
+        const likeRequest = new XMLHttpRequest()
+        
+        likeRequest.onreadystatechange = () => {
+            if (likeRequest.readyState === XMLHttpRequest.DONE) {
+                if (likeRequest.status === 200) 
+                {
+                    const span = document.querySelector(`#likes_${ post_id }`)
+                    const initial = likesArr[post_id].length
+                    likesArr[post_id] = JSON.parse(likeRequest.responseText);
+                    span.innerHTML = likesArr[post_id].length
+                    if(initial < likesArr[post_id].length)
+                    {
+                        span.parentNode.classList.add("liked")
+                    }
+                    else
+                    {
+                        span.parentNode.classList.remove("liked")
+                    }
+                }
+            }
+        }
+
+        likeRequest.open('POST', `/posts/like/${ post_id }`)
+        likeRequest.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+        likeRequest.send(`likes=${ JSON.stringify(likesArr[post_id]) }`)
+    }
+</script>
+{% endif %}
+{% endblock %}
