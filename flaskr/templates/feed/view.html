@@ -45,10 +45,12 @@
             console.log(post.id)
             likesArr[post.id] = JSON.parse(document.querySelector(`#arr_${ post.id }`).value)
             span.innerHTML = likesArr[post.id].length
+            {% if session.get('user_id') %}
             if(likesArr[post.id].includes({{ session.get('user_id')|safe }}))
             {
                 span.parentNode.classList.add("liked")
             }
+            {% endif %}
         }
     })()
 
